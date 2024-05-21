@@ -4,11 +4,11 @@ namespace Animal_Zoo
 {
     internal class InGameClock
     {
-        public DateTime Clock { get; set; } = DateTime.ParseExact("2000-01-01 00:00", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+        public DateTime Clock { get; private set; } = DateTime.ParseExact("2000-01-01 00:00", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
 
         public void UpdateClock()
         {
-            Clock = Clock.AddMinutes(1);
+            Clock = Clock.AddHours(1);
         }
 
         public string GetClockDateString()
