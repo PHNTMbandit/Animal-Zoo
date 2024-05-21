@@ -38,8 +38,9 @@
             label1 = new Label();
             Btn_BuyAnimal = new Button();
             Lbl_HabitatLimit = new Label();
-            flowLayoutPanel1 = new FlowLayoutPanel();
+            Flw_HabitatList = new FlowLayoutPanel();
             Lbl_MaxOffers = new Label();
+            Spawn_Offer_Timer = new System.Windows.Forms.Timer(components);
             Flw_AnimalOffers.SuspendLayout();
             Flw_TemplateAnimalOffer.SuspendLayout();
             SuspendLayout();
@@ -83,7 +84,7 @@
             // 
             // Flw_AnimalOffers
             // 
-            Flw_AnimalOffers.AutoSize = true;
+            Flw_AnimalOffers.AutoScroll = true;
             Flw_AnimalOffers.BorderStyle = BorderStyle.Fixed3D;
             Flw_AnimalOffers.Controls.Add(Flw_TemplateAnimalOffer);
             Flw_AnimalOffers.FlowDirection = FlowDirection.TopDown;
@@ -135,13 +136,14 @@
             Lbl_HabitatLimit.Text = "Habitats 0/0";
             Lbl_HabitatLimit.TextAlign = ContentAlignment.MiddleRight;
             // 
-            // flowLayoutPanel1
+            // Flw_HabitatList
             // 
-            flowLayoutPanel1.BorderStyle = BorderStyle.Fixed3D;
-            flowLayoutPanel1.Location = new Point(287, 88);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(592, 354);
-            flowLayoutPanel1.TabIndex = 6;
+            Flw_HabitatList.BorderStyle = BorderStyle.Fixed3D;
+            Flw_HabitatList.Location = new Point(290, 88);
+            Flw_HabitatList.Name = "Flw_HabitatList";
+            Flw_HabitatList.Padding = new Padding(5);
+            Flw_HabitatList.Size = new Size(592, 359);
+            Flw_HabitatList.TabIndex = 6;
             // 
             // Lbl_MaxOffers
             // 
@@ -152,15 +154,21 @@
             Lbl_MaxOffers.TabIndex = 0;
             Lbl_MaxOffers.Text = "0/0";
             // 
+            // Spawn_Offer_Timer
+            // 
+            Spawn_Offer_Timer.Enabled = true;
+            Spawn_Offer_Timer.Interval = 10000;
+            Spawn_Offer_Timer.Tick += Spawn_Offer_Timer_Tick;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(891, 474);
-            Controls.Add(Lbl_MaxOffers);
-            Controls.Add(flowLayoutPanel1);
-            Controls.Add(Lbl_HabitatLimit);
+            Controls.Add(Flw_HabitatList);
             Controls.Add(Flw_AnimalOffers);
+            Controls.Add(Lbl_MaxOffers);
+            Controls.Add(Lbl_HabitatLimit);
             Controls.Add(Lbl_bank_amount);
             Controls.Add(Title);
             Controls.Add(Lbl_time);
@@ -186,7 +194,8 @@
         private Button Btn_BuyAnimal;
         private Label label1;
         private Label Lbl_HabitatLimit;
-        private FlowLayoutPanel flowLayoutPanel1;
+        private FlowLayoutPanel Flw_HabitatList;
         private Label Lbl_MaxOffers;
+        private System.Windows.Forms.Timer Spawn_Offer_Timer;
     }
 }

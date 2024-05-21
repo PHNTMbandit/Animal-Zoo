@@ -1,7 +1,8 @@
 ﻿namespace Animal_Zoo
 {
-    internal class AnimalOffers
+    internal class AnimalOfferManager
     {
+        public int MaxOffers { get; private set; } = 4;
         public List<AnimalOffer> AnimalOfferList { get; private set; } = [];
 
         public Action<AnimalOffer>? onListChanged;

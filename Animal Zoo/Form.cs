@@ -3,15 +3,19 @@ namespace Animal_Zoo
     public partial class Form : System.Windows.Forms.Form
     {
         private readonly AnimalFactory _factory = new();
-        private readonly AnimalOffers _offers = new();
+        private readonly AnimalOfferManager _offers = new();
         private readonly Bank _playerBank = new();
+        private readonly HabitatManager _habitatManager = new();
         private readonly InGameClock _inGameClock = new();
+        private List<HabitatListItem> _habitatListItems = [];
+
+        #region Initilisation Functions
 
         public Form()
         {
             InitializeComponent();
 
-            _offers.onListChanged = UpdateOfferList;
+            _offers.onListChanged = AddOfferToList;
             _playerBank.onBalanceChange = UpdateBankAmountLabel;
         }
 
@@ -19,14 +23,37 @@ namespace Animal_Zoo
         {
             Flw_TemplateAnimalOffer.Visible = false;
             UpdateBankAmountLabel();
-            _offers.AddOffer(_factory.GetAnimalOffer(AnimalName.Dog));
-            _offers.AddOffer(_factory.GetAnimalOffer(AnimalName.Cat));
+
+            for (int i = 0; i < _habitatManager.Habitats.Length; i++)
+            {
+                AddHabitToList(_habitatManager.Habitats[i]);
+            }
         }
+
+        #endregion Initilisation Functions
 
         private void Clock_Timer_Tick(object sender, EventArgs e)
         {
             _inGameClock.UpdateClock();
             Lbl_time.Text = $"{_inGameClock.GetClockDateString()}\n{_inGameClock.GetClockTimeString()}";
+
+            foreach (HabitatListItem habitatListItem in _habitatListItems)
+            {
+                Animal? enclosedAnimal = habitatListItem.Habitat.EnclosedAnimal;
+
+                if (enclosedAnimal == null)
+                {
+                    return;
+                }
+
+                _playerBank.AddToBalance(enclosedAnimal.Earnings);
+                var currentDeathDate = _inGameClock.Clock.AddDays(enclosedAnimal.DeathDays);
+
+                if (_inGameClock.Clock >= currentDeathDate)
+                {
+                    enclosedAnimal.onAnimalDeath?.Invoke();
+                }
+            }
         }
 
         private void UpdateBankAmountLabel()
@@ -34,55 +61,67 @@ namespace Animal_Zoo
             Lbl_bank_amount.Text = $"${_playerBank.Balance}";
         }
 
-        private void UpdateOfferList(AnimalOffer offer)
+        #region Animal Offer Functions
+
+        private void Spawn_Offer_Timer_Tick(object sender, EventArgs e)
         {
-            FlowLayoutPanel panel = new()
+            if (_offers.AnimalOfferList.Count < _offers.MaxOffers)
             {
-                AutoSize = true,
-                BorderStyle = BorderStyle.FixedSingle,
-                FlowDirection = FlowDirection.TopDown,
-                Name = $"Flw_{offer.Animal.Name}Offer",
-                Padding = new Padding(5),
-                Parent = Flw_AnimalOffers,
-            };
+                _offers.AddOffer(_factory.GetAnimalOffer());
+            }
+        }
 
-            Label label = new()
-            {
-                Parent = panel,
-                Text = offer.Animal.Name.ToString(),
-            };
+        private void AddOfferToList(AnimalOffer offer)
+        {
+            AnimalOfferListItem listItem = new(Flw_AnimalOffers, offer);
+            listItem.onBuy += BuyAnimal_Click;
 
-            Button dynamicButton = new()
-            {
-                AutoSize = true,
-                Name = offer.Animal.Name.ToString(),
-                Parent = panel,
-                Size = new Size(244, 30),
-                Text = $"Buy for ${offer.Cost}",
-            };
+            Lbl_MaxOffers.Text = $"{_offers.AnimalOfferList.Count}/{_offers.MaxOffers}";
+        }
 
-            dynamicButton.Click += (sender, EventArgs) => { BuyAnimal_Click(sender, EventArgs, offer, panel); };
-
-            Flw_AnimalOffers.Controls?.Add(panel);
-            panel.Controls?.Add(label);
-            panel.Controls?.Add(dynamicButton);
+        private void DeleteOfferFromList(AnimalOfferListItem listItem)
+        {
+            listItem.Dispose();
 
             Lbl_MaxOffers.Text = $"{_offers.AnimalOfferList.Count}/4";
         }
 
-        private void BuyAnimal_Click(object? sender, EventArgs e, AnimalOffer offer, FlowLayoutPanel panel)
+        private void BuyAnimal_Click(AnimalOfferListItem listItem)
         {
-            if (_playerBank.CanAfford(offer.Cost))
+            if (_habitatManager.FindSuitableHabitat(listItem.AnimalOffer.Animal.Size, out Habitat habitat))
             {
-                _offers.RemoveOffer(offer);
-                _playerBank.RemoveFromBalance(offer.Cost);
-                panel.Dispose();
-                Lbl_MaxOffers.Text = $"{_offers.AnimalOfferList.Count}/4";
-            }
-            else
-            {
-                MessageBox.Show("You cannot afford to buy this!", "Insufficient Funds");
+                if (_playerBank.CanAfford(listItem.AnimalOffer.Cost))
+                {
+                    DeleteOfferFromList(listItem);
+                    _offers.RemoveOffer(listItem.AnimalOffer);
+                    _playerBank.RemoveFromBalance(listItem.AnimalOffer.Cost);
+                    habitat.EncloseAnimal(listItem.AnimalOffer.Animal);
+                }
+                else
+                {
+                    MessageBox.Show("You cannot afford to buy this!", "Insufficient Funds");
+                }
             }
         }
+
+        #endregion Animal Offer Functions
+
+        #region Habitat Functions
+
+        private void AddHabitToList(Habitat habitat)
+        {
+            HabitatListItem listItem = new(Flw_HabitatList, habitat);
+            listItem.Habitat.onHabitatChange += UpdateHabitatFromList;
+            _habitatListItems.Add(listItem);
+
+            Lbl_HabitatLimit.Text = $"{_habitatManager.Habitats.Length}/4";
+        }
+
+        private void UpdateHabitatFromList(Habitat habitat)
+        {
+            _habitatListItems.Find(i => i.Habitat == habitat)?.UpdateHabitatListItemUI();
+        }
+
+        #endregion Habitat Functions
     }
 }

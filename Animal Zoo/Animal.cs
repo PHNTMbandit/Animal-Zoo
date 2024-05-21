@@ -1,13 +1,19 @@
 ﻿namespace Animal_Zoo
 {
-    internal enum AnimalName
+    internal enum AnimalSize
     {
-        Dog,
-        Cat
+        Small,
+        Medium,
+        Large
     }
 
-    internal class Animal(AnimalName name)
+    internal class Animal(string name, AnimalSize size, int earnings, int deathDays)
     {
-        public AnimalName Name { get; private set; } = name;
+        public string Name { get; private set; } = name;
+        public AnimalSize Size { get; private set; } = size;
+        public int Earnings { get; private set; } = earnings;
+        public int DeathDays { get; private set; } = deathDays;
+
+        public Action? onAnimalDeath;
     }
 }

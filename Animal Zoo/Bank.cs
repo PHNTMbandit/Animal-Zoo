@@ -2,7 +2,7 @@
 {
     internal class Bank
     {
-        public int Balance { get; private set; } = 1000;
+        public int Balance { get; private set; } = 500;
 
         public Action? onBalanceChange;
 
